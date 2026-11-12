@@ -1,6 +1,6 @@
 # Job Application Extractor
 
-A configurable skill for extracting job application details from saved HTML listings, generating schema-compliant YAML, and reporting processing results—including incomplete or duplicate listings, uncertainties, and any research or Playwright used.
+A configurable skill for extracting job application details from saved HTML listings, generating schema-compliant YAML, and reporting processing results including incomplete or duplicate listings, uncertainties, and any research or Playwright used.
 
 # How This will work
 
