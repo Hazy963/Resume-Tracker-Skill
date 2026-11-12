@@ -2,15 +2,34 @@
 
 A configurable skill for extracting job application details from saved HTML job listings and writing consolidated YAML output. The output structure is defined by a YAML configuration file, so the skill can follow your chosen schema.
 
+# How This will work
+
+- By Appling you need to save every job listing html page using browser extension or "ctrl+s"
+- Configure this folder of html pages as your skill "INPUT_FOLDER"
+- Config Folder is provided in the repo: you can add or remove properties that you need or not need.
+- Changing this will change what will be extracted
+- Provide an hardcoed path for your "OUTPUT_FOLDER".
+- The reports of this skill will be creatd in "yaml" format
+- This reports can be indviaualley or together presented in the in this repo attached html file "Resume-Tracker-Dashboard.html".
+
+The repository includes a predefined dashboard that can load one or more exported YAML files from the output folder. Load the files to view their entries together in the dashboard.
+
+The dashboard provides an overview of the loaded files and applications, including status and application-method breakdowns, entries per file, applications per day, and summaries by city and company. You can search, filter by status, sort, and switch between card and table views.
+
+<img width="2513" height="1257" alt="image" src="https://github.com/user-attachments/assets/0c0c7c45-204b-414c-840f-e7933792b7a2" />
+
+
 ## Workflow diagrams
 
 ### End-to-end application workflow
 
-![End-to-end application workflow](docs/images/application-workflow.png)
+<img width="1371" height="850" alt="image" src="https://github.com/user-attachments/assets/6cecfb92-d962-421c-a337-3e9caa054313" />
 
-### Job information extraction workflow
 
-![Job information extraction workflow](docs/images/extraction-workflow.png)
+### Job information extraction workflow (Breakdown)
+
+<img width="698" height="913" alt="image" src="https://github.com/user-attachments/assets/1ee54e23-12a2-4c10-bb37-059843e880e6" />
+
 
 ## Configure folders
 
@@ -70,14 +89,6 @@ OUTPUT_FOLDER/jobs.yaml
 ```
 
 It contains one record per unique listing and follows the configured schema. The YAML must be syntactically valid, and existing valid records should be preserved when updating the output.
-
-## View your applications in the dashboard
-
-The repository includes a predefined dashboard that can load one or more exported YAML files from the output folder. Load the files to view their entries together in the dashboard.
-
-The dashboard provides an overview of the loaded files and applications, including status and application-method breakdowns, entries per file, applications per day, and summaries by city and company. You can search, filter by status, sort, and switch between card and table views.
-
-![Job application dashboard showing loaded YAML files and application summaries](docs/images/dashboard-preview.png)
 
 ## Processing report
 
