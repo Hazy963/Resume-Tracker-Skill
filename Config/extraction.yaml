@@ -1,0 +1,12 @@
+Jobs:
+  - CompanyName: ""
+    Address: ""
+    Email: null
+    OnlineFormApplying: true
+    ApplyingDate: "dd-mm-yyyy"
+    Status: ""
+    Notes: ""
+    JobTitle: ""
+    Link: ""
+
+ 

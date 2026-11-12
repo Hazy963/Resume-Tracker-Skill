@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>YAML Dashboard</title>
+<meta name="theme-color" content="#0e1116">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+<style>
+  :root{
+    color-scheme:dark;
+    --bg:#0e1116; --panel:#151a22; --panel-2:#1a2029; --text:#eef0f4; --muted:#8b93a3; --line:rgba(255,255,255,.07);
+    --accent:#ff9a5a; --accent-2:#ffc371; --accent-3:#ff3d57;
+    --accent-soft:rgba(255,154,90,.12);
+    --ok:#6fd6a8; --ok-soft:rgba(111,214,168,.12);
+    --warn:#ffc371; --warn-soft:rgba(255,195,113,.12);
+    --bad:#ff3d57; --bad-soft:rgba(255,61,87,.12);
+    --neutral-soft:rgba(255,255,255,.06); --radius:16px;
+    --warm:linear-gradient(135deg,#ffc371 0%,#ff9a5a 50%,#ff3d57 100%);
+    --font:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);background-image:radial-gradient(900px 420px at 90% -8%,rgba(255,140,80,.13),transparent 65%),radial-gradient(700px 380px at 10% 110%,rgba(255,61,87,.07),transparent 65%);background-attachment:fixed;color:var(--text);font:14px/1.55 var(--font);display:flex;-webkit-font-smoothing:antialiased}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  aside{width:260px;flex:none;background:rgba(21,26,34,.6);backdrop-filter:blur(8px);border-right:1px solid var(--line);display:flex;flex-direction:column;height:100vh;position:sticky;top:0}
+  aside h1{font-size:15px;font-weight:600;margin:0;padding:22px 20px 14px;display:flex;align-items:center;gap:10px}
+  aside h1::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--warm);box-shadow:0 0 14px rgba(255,154,90,.6)}
+  #tree{flex:1;overflow:auto;padding:0 10px 10px}
+  .folder{font-size:12px;color:var(--muted);padding:14px 10px 4px}
+  .file{display:block;width:100%;text-align:left;background:none;border:0;color:var(--muted);padding:8px 10px;border-radius:10px;cursor:pointer;font:inherit;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:background .15s,color .15s}
+  .file:hover{background:var(--neutral-soft);color:var(--text)}
+  .file.all{font-weight:600;color:var(--text);margin:6px 0 10px;border:1px solid var(--line);background:var(--neutral-soft)}
+  .file.all.active{border-color:rgba(255,154,90,.35);color:var(--accent-2);background:var(--accent-soft)}
+  .file.active{background:var(--accent-soft);color:var(--accent-2);font-weight:600}
+  .loader{padding:14px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+  button.btn,label.btn{background:var(--neutral-soft);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:8px 12px;cursor:pointer;font:inherit;font-weight:500;text-align:center;transition:background .15s}
+  button.btn:hover,label.btn:hover{background:rgba(255,255,255,.1)}
+  main{flex:1;min-width:0;padding:36px 40px 72px;max-width:none;animation:enter .5s ease-out}
+  @keyframes enter{from{opacity:0}to{opacity:1}}
+  header.top{display:flex;flex-wrap:wrap;gap:12px;align-items:end;justify-content:space-between;margin-bottom:26px}
+  header.top h2{margin:0;font-size:28px;font-weight:600;letter-spacing:-.02em}
+  header.top small{color:var(--muted)}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin-bottom:26px;box-shadow:0 20px 60px -30px rgba(255,140,80,.35)}
+  .stat{background:linear-gradient(180deg,#171c25,#12171e);padding:20px 22px}
+  .stat .n{font-size:32px;font-weight:600;letter-spacing:-.02em;line-height:1.1;background:linear-gradient(180deg,#fff,#ffd9bd);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .stat:first-child .n{background:var(--warm);-webkit-background-clip:text;background-clip:text}
+  .stat .l{color:var(--muted);font-size:13px;margin-top:6px}
+  .toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px}
+  .toolbar input,.toolbar select{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:9px 14px;font:inherit}
+  .toolbar input{flex:1;min-width:200px}
+  .toolbar input::placeholder{color:var(--muted)}
+  .toolbar input:focus,.toolbar select:focus{border-color:rgba(255,154,90,.5);outline:0}
+  .seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel)}
+  .seg button{background:none;color:var(--muted);border:0;padding:9px 14px;cursor:pointer;font:inherit}
+  .seg button.on{background:var(--accent-soft);color:var(--accent-2);font-weight:600}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px;display:flex;flex-direction:column;gap:12px;transition:border-color .2s}
+  .card:hover{border-color:rgba(255,154,90,.3)}
+  .card h3{margin:0;font-size:16px;font-weight:600;line-height:1.35;letter-spacing:-.01em}
+  .company{color:var(--muted);font-weight:400}
+  .row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .badge{display:inline-block;font-size:12px;font-weight:500;padding:3px 10px;border-radius:99px;background:var(--neutral-soft);color:var(--muted)}
+  .badge.ok{background:var(--ok-soft);color:var(--ok)} .badge.info{background:var(--accent-soft);color:var(--accent-2)}
+  .badge.warn{background:var(--warn-soft);color:var(--warn)} .badge.bad{background:var(--bad-soft);color:var(--bad)}
+  .meta{color:var(--muted);font-size:13px;display:grid;grid-template-columns:auto 1fr;gap:3px 12px}
+  .meta b{font-weight:400;color:var(--muted);opacity:.7}
+  .meta span{color:var(--text);word-break:break-word}
+  .notes{background:rgba(255,255,255,.04);border-radius:10px;padding:10px 12px;font-size:13px;color:#c9ced8}
+  .card .actions{margin-top:auto;display:flex;gap:8px;padding-top:4px}
+  .card a.btn{background:linear-gradient(135deg,#ffcf8a 0%,#ffa866 100%);color:#2a1606;box-shadow:0 6px 16px -8px rgba(255,154,90,.7);border-radius:99px;padding:7px 16px;text-decoration:none;font-weight:600;font-size:13px}
+  .card a.btn:hover{filter:brightness(1.08)}
+  .card a.btn.sec{background:var(--neutral-soft);color:var(--text);border:1px solid var(--line)}
+  table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;user-select:none;background:var(--panel-2)}
+  tr:last-child td{border-bottom:0}
+  td a{color:var(--accent-2);text-decoration:none}
+  .tablewrap{overflow-x:auto}
+  .empty{text-align:center;color:var(--muted);padding:90px 20px;border:1px dashed rgba(255,255,255,.14);border-radius:var(--radius)}
+  .empty h2{color:var(--text);font-weight:600;margin-top:0}
+  .empty.drag{border-color:var(--accent);color:var(--accent-2);background:var(--accent-soft)}
+  .error{background:var(--bad-soft);color:var(--bad);padding:12px 14px;border-radius:10px;margin-bottom:16px}
+  .charts{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-bottom:26px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px}
+  .panel h4{margin:0 0 14px;font-size:13px;color:var(--muted);font-weight:500}
+  .donut{display:flex;align-items:center;gap:20px}
+  .donut svg{width:130px;height:130px;flex:none}
+  .donut .tot{font:600 22px Inter,system-ui,sans-serif;fill:var(--text);text-anchor:middle}
+  .donut .sub{font:11px Inter,system-ui,sans-serif;fill:var(--muted);text-anchor:middle}
+  .legend{display:flex;flex-direction:column;gap:6px;font-size:13px;min-width:0}
+  .legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px}
+  .legend b{margin-left:6px;color:var(--muted);font-weight:400}
+  .bar{display:grid;grid-template-columns:minmax(70px,120px) 1fr 24px;gap:12px;align-items:center;margin:8px 0;font-size:13px}
+  .bar .bl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
+  .bar .bt{background:var(--neutral-soft);border-radius:99px;height:8px;overflow:hidden}
+  .bar .bf{height:100%;background:var(--warm);border-radius:99px}
+  .bar .bn{text-align:right;font-weight:600}
+  ::-webkit-scrollbar{width:10px;height:10px} ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:10px}
+  @media(max-width:800px){body{flex-direction:column} aside{width:100%;height:auto;position:static;max-height:40vh} main{padding:20px}}
+  @media(prefers-reduced-motion:reduce){main{animation:none} *{transition:none!important}}
+</style>
+</head>
+<body>
+
+<aside>
+  <h1>YAML files</h1>
+  <div id="tree"></div>
+  <div class="loader">
+    <label class="btn">Open folder…<input id="pickDir" type="file" webkitdirectory hidden></label>
+    <label class="btn">Open file(s)…<input id="pickFiles" type="file" accept=".yaml,.yml" multiple hidden></label>
+  </div>
+</aside>
+
+<main id="main"></main>
+
+<!-- Data slot: the .NET build script replaces everything between the two markers. -->
+<script>
+const EMBEDDED = /*DATA_START*/[]/*DATA_END*/;
+</script>
+
+<script>
+/* ---------- Configuration: how YAML keys map to the dashboard ---------- */
+const FIELDS = {
+  title:   'JobTitle',
+  company: 'CompanyName',
+  address: 'Address',
+  email:   'Email',
+  online:  'OnlineFormApplying',
+  date:    'ApplyingDate',     // dd-MM-yyyy
+  status:  'Status',
+  notes:   'Notes',
+  link:    'Link'
+};
+const STATUS_STYLE = [            // first match wins (case-insensitive, substring)
+  [/beworben|applied/,'info'], [/interview|eingeladen|gespräch/,'warn'],
+  [/zusage|angebot|offer/,'ok'], [/absage|reject|abgelehnt/,'bad']
+];
+
+/* ---------- State ---------- */
+const ALL = {path:'__all__', all:true};   // pseudo-entry: every loaded file combined
+let files = [];        // {path, text}
+let current = null;    // selected file
+let view = 'cards', query = '', statusFilter = '', sortKey = 'date', sortDir = -1;
+
+const $ = s => document.querySelector(s);
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const safeUrl = u => /^https?:\/\//i.test(u || '') ? u : '';
+
+/* ---------- Data handling ---------- */
+function parseFile(f){
+  const doc = jsyaml.load(f.text);
+  let list = Array.isArray(doc) ? doc : Object.values(doc || {}).find(Array.isArray) || [];
+  return list.filter(x => x && typeof x === 'object');
+}
+function parseDate(s){
+  const m = /^(\d{1,2})-(\d{1,2})-(\d{4})$/.exec(String(s || ''));
+  return m ? new Date(+m[3], +m[2]-1, +m[1]) : null;
+}
+const fmtDate = s => { const d = parseDate(s); return d ? d.toLocaleDateString('de-DE') : (s || '–'); };
+const statusOf = j => (j[FIELDS.status] || '').toString().trim();
+const statusClass = s => { for (const [re,c] of STATUS_STYLE) if (re.test(s.toLowerCase())) return c; return ''; };
+function applyMethod(j){
+  if (j[FIELDS.online] === true)  return {txt:'Online form', cls:'info'};
+  if (j[FIELDS.email])            return {txt:'E-mail',      cls:'ok'};
+  return {txt:'Unknown', cls:''};
+}
+
+/* ---------- Sidebar ---------- */
+function renderTree(){
+  const groups = {};
+  files.forEach(f => {
+    const i = f.path.lastIndexOf('/');
+    (groups[i < 0 ? '' : f.path.slice(0,i)] ||= []).push(f);
+  });
+  const allBtn = files.length > 1 ? `<button class="file all ${current===ALL?'active':''}" data-path="${ALL.path}" title="All loaded files combined">All files (${files.length})</button>` : '';
+  $('#tree').innerHTML = allBtn + Object.keys(groups).sort().map(g =>
+    (g ? `<div class="folder">${esc(g)}</div>` : '') +
+    groups[g].map(f => `<button class="file ${f===current?'active':''}" data-path="${esc(f.path)}" title="${esc(f.path)}">${esc(f.path.split('/').pop())}</button>`).join('')
+  ).join('') || '<div class="folder">No files loaded</div>';
+  document.querySelectorAll('.file').forEach(b => b.onclick = () => select(b.dataset.path === ALL.path ? ALL : files.find(f => f.path === b.dataset.path)));
+}
+function select(f){
+  current = f; statusFilter = ''; query = '';
+  try { localStorage.setItem('lastYaml', f.path); } catch {}
+  renderTree(); render();
+}
+
+/* ---------- Main render ---------- */
+function render(){
+  const main = $('#main');
+  if (!current){
+    main.innerHTML = `<div class="empty" id="drop"><h2>No YAML loaded</h2>
+      <p>Drop a folder or YAML files here, or use the buttons on the left.<br>
+      Or run the .NET build script to embed a whole data folder.</p></div>`;
+    wireDrop($('#drop')); return;
+  }
+  let jobs, failed = [];
+  if (current.all){
+    jobs = [];
+    files.forEach(f => { try { parseFile(f).forEach(j => jobs.push({...j, __file: f.path})); } catch { failed.push(f.path); } });
+  } else {
+    try { jobs = parseFile(current); }
+    catch (e){ main.innerHTML = `<div class="error"><b>${esc(current.path)}</b> could not be parsed:<br>${esc(e.message)}</div>`; return; }
+  }
+
+  const statuses = [...new Set(jobs.map(statusOf))].sort();
+  const q = query.toLowerCase();
+  let shown = jobs.filter(j =>
+    (!statusFilter || (statusFilter === '__none' ? !statusOf(j) : statusOf(j) === statusFilter)) &&
+    (!q || JSON.stringify(j).toLowerCase().includes(q)));
+  shown.sort((a,b) => {
+    const k = sortKey;
+    const va = k==='date' ? (parseDate(a[FIELDS.date])||0) : String(a[FIELDS[k]]??'').toLowerCase();
+    const vb = k==='date' ? (parseDate(b[FIELDS.date])||0) : String(b[FIELDS[k]]??'').toLowerCase();
+    return (va>vb?1:va<vb?-1:0) * sortDir;
+  });
+
+  const dates = jobs.map(j => parseDate(j[FIELDS.date])).filter(Boolean).sort((a,b)=>a-b);
+  const stats = [
+    ...(current.all ? [[files.length - failed.length, 'Files']] : []),
+    [jobs.length, 'Entries'],
+    [jobs.filter(j => statusOf(j)).length, 'With status'],
+    [jobs.filter(j => !statusOf(j)).length, 'Without status'],
+    [jobs.filter(j => j[FIELDS.online] === true).length, 'Online forms'],
+    [jobs.filter(j => j[FIELDS.email]).length, 'With e-mail'],
+    [new Set(jobs.map(j => j[FIELDS.company])).size, 'Companies']
+  ];
+
+  main.innerHTML = `
+    <header class="top">
+      <div><h2>${current.all ? 'All files' : esc(current.path.split('/').pop())}</h2>
+      <small>${current.all ? files.length + ' files combined' : esc(current.path)}${dates.length ? ' · ' + dates[0].toLocaleDateString('de-DE') + (+dates[0] !== +dates.at(-1) ? ' → ' + dates.at(-1).toLocaleDateString('de-DE') : '') : ''}</small></div>
+    </header>
+    ${failed.length ? `<div class="error">Skipped (could not be parsed): ${failed.map(esc).join(', ')}</div>` : ''}
+    <section class="stats">${stats.map(([n,l]) => `<div class="stat"><div class="n">${n}</div><div class="l">${l}</div></div>`).join('')}</section>
+    <div class="toolbar">
+      <input id="q" type="search" placeholder="Search everything…" value="${esc(query)}">
+      <select id="st"><option value="">All statuses</option>
+        ${statuses.map(s => `<option value="${s || '__none'}" ${statusFilter===(s||'__none')?'selected':''}>${esc(s || '(no status)')}</option>`).join('')}</select>
+      <select id="sort">
+        ${['date','company','title','status'].map(k => `<option value="${k}" ${sortKey===k?'selected':''}>Sort: ${k}</option>`).join('')}</select>
+      <button class="btn" id="dir">${sortDir>0?'↑':'↓'}</button>
+      <div class="seg"><button data-v="cards" class="${view==='cards'?'on':''}">Cards</button><button data-v="table" class="${view==='table'?'on':''}">Table</button></div>
+    </div>
+    ${charts(shown)}
+    ${shown.length ? (view === 'cards' ? cards(shown) : table(shown)) : '<div class="empty">No matches.</div>'}`;
+
+  const q$ = $('#q'); q$.oninput = e => { query = e.target.value; render(); $('#q').focus(); $('#q').setSelectionRange(query.length, query.length); };
+  $('#st').onchange = e => { statusFilter = e.target.value; render(); };
+  $('#sort').onchange = e => { sortKey = e.target.value; render(); };
+  $('#dir').onclick = () => { sortDir *= -1; render(); };
+  document.querySelectorAll('.seg button').forEach(b => b.onclick = () => { view = b.dataset.v; render(); });
+  document.querySelectorAll('th[data-k]').forEach(th => th.onclick = () => {
+    sortDir = sortKey === th.dataset.k ? -sortDir : 1; sortKey = th.dataset.k; render(); });
+}
+
+/* ---------- Charts (pure SVG / CSS, no library) ---------- */
+const PALETTE = ['#ff9a5a','#6cc3ff','#6fd6a8','#b79cff','#ffd35a','#e58bc0','#2dd4d4'];   // hue-spread fallback
+const STATUS_COLOR = [            // meaning-based colours for the Status donut (first match wins)
+  [/absage|reject|abgelehnt/,'#ff3d57'],            // red    = rejected
+  [/zusage|angebot|offer/,'#6fd6a8'],               // green  = offer
+  [/interview|eingeladen|gespräch/,'#ffd35a'],      // yellow = interview
+  [/eingangsbest|received|bestätigung/,'#6cc3ff'],  // blue   = acknowledged
+  [/prüfung|review|läuft/,'#b79cff'],               // purple = in review
+  [/gesendet|beworben|applied|sent/,'#ff9a5a']      // orange = sent
+];
+const statusColor = l => { const k = l.toLowerCase(); for (const [re,c] of STATUS_COLOR) if (re.test(k)) return c; return null; };
+const NEUTRAL = '#5b6475';
+const count = (list, fn) => { const m = new Map(); list.forEach(x => { const k = fn(x); m.set(k, (m.get(k) || 0) + 1); }); return [...m]; };
+const cityOf = a => { const m = /\b\d{5}\s+([^,]+)/.exec(a || ''); return m ? m[1].trim() : 'Unknown'; };
+
+function donut(title, items){
+  const total = items.reduce((s,i) => s + i[1], 0);
+  if (!total) return '';
+  const r = 42, C = 2 * Math.PI * r; let off = 0;
+  const cols = items.map(([l],i) => /^(no status|unknown)/i.test(l) ? NEUTRAL : ((title === 'Status' && statusColor(l)) || PALETTE[i % PALETTE.length]));
+  const arcs = items.map(([l,n],i) => {
+    const len = n / total * C;
+    const s = `<circle cx="60" cy="60" r="${r}" fill="none" stroke="${cols[i]}" stroke-width="18" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}" transform="rotate(-90 60 60)"><title>${esc(l)}: ${n}</title></circle>`;
+    off += len; return s;
+  }).join('');
+  return `<div class="panel"><h4>${esc(title)}</h4><div class="donut">
+    <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="${r}" fill="none" stroke="var(--neutral-soft)" stroke-width="18"/>${arcs}
+      <text class="tot" x="60" y="62">${total}</text><text class="sub" x="60" y="76">total</text></svg>
+    <div class="legend">${items.map(([l,n],i) => `<span><i style="background:${cols[i]}"></i>${esc(l)}<b>${n} · ${Math.round(n/total*100)}%</b></span>`).join('')}</div></div></div>`;
+}
+function bars(title, items){
+  if (!items.length) return '';
+  const max = Math.max(...items.map(i => i[1]));
+  return `<div class="panel"><h4>${esc(title)}</h4>${items.map(([l,n]) =>
+    `<div class="bar"><span class="bl" title="${esc(l)}">${esc(l)}</span><div class="bt"><div class="bf" style="width:${n/max*100}%"></div></div><span class="bn">${n}</span></div>`).join('')}</div>`;
+}
+function charts(list){
+  if (!list.length) return '';
+  const byDate = count(list, j => parseDate(j[FIELDS.date])?.getTime() ?? 0)
+    .sort((a,b) => a[0]-b[0]).map(([t,n]) => [t ? new Date(t).toLocaleDateString('de-DE') : '–', n]);
+  const byCity = count(list, j => cityOf(j[FIELDS.address])).sort((a,b) => b[1]-a[1]).slice(0,8);
+  const byCompany = count(list, j => j[FIELDS.company] || 'Unknown').sort((a,b) => b[1]-a[1]);
+  return `<section class="charts">
+    ${donut('Status', count(list, j => statusOf(j) || 'No status').sort((a,b) => b[1]-a[1]))}
+    ${donut('Application method', count(list, j => applyMethod(j).txt))}
+    ${list.some(j => j.__file) ? bars('Entries per file', count(list, j => (j.__file || '').split('/').pop()).sort((a,b) => b[1]-a[1])) : ''}
+    ${bars('Applications per day', byDate)}
+    ${bars('By city', byCity)}
+    ${byCompany.some(c => c[1] > 1) ? bars('Top companies', byCompany.slice(0,8)) : ''}
+  </section>`;
+}
+
+function badges(j){
+  const s = statusOf(j), m = applyMethod(j);
+  return `<span class="badge ${statusClass(s)}">${esc(s || 'No status')}</span><span class="badge ${m.cls}">${m.txt}</span>`;
+}
+function extras(j){
+  const known = new Set(Object.values(FIELDS));
+  return Object.entries(j).filter(([k,v]) => !known.has(k) && !k.startsWith('__') && v != null && v !== '')
+    .map(([k,v]) => `<b>${esc(k)}</b><span>${esc(typeof v === 'object' ? JSON.stringify(v) : v)}</span>`).join('');
+}
+function cards(list){
+  return `<div class="grid">${list.map(j => {
+    const link = safeUrl(j[FIELDS.link]), mail = j[FIELDS.email];
+    return `<article class="card">
+      <div><h3>${esc(j[FIELDS.title] || '(untitled)')}</h3><div class="company">${esc(j[FIELDS.company] || '')}</div></div>
+      <div class="row">${badges(j)}</div>
+      <div class="meta">
+        ${j.__file ? `<b>File</b><span>${esc(j.__file)}</span>` : ''}
+        <b>Date</b><span>${esc(fmtDate(j[FIELDS.date]))}</span>
+        <b>Address</b><span>${esc(j[FIELDS.address] || '–')}</span>
+        ${mail ? `<b>E-mail</b><span>${esc(mail)}</span>` : ''}
+        ${extras(j)}
+      </div>
+      ${j[FIELDS.notes] ? `<div class="notes">${esc(j[FIELDS.notes])}</div>` : ''}
+      <div class="actions">
+        ${link ? `<a class="btn" href="${esc(link)}" target="_blank" rel="noopener">Open posting</a>` : ''}
+        ${mail ? `<a class="btn sec" href="mailto:${esc(mail)}">Write e-mail</a>` : ''}
+      </div></article>`; }).join('')}</div>`;
+}
+function table(list){
+  const th = (k,l) => `<th data-k="${k}">${l}${sortKey===k?(sortDir>0?' ↑':' ↓'):''}</th>`;
+  return `<div class="tablewrap"><table><thead><tr>${th('title','Job')}${th('company','Company')}${th('date','Date')}${th('status','Status')}<th>Method</th><th>Notes</th><th></th></tr></thead><tbody>
+    ${list.map(j => { const link = safeUrl(j[FIELDS.link]); return `<tr>
+      <td><b>${esc(j[FIELDS.title])}</b></td><td>${esc(j[FIELDS.company])}<br><small style="color:var(--muted)">${esc(j[FIELDS.address])}</small>${j.__file ? `<br><small style="color:var(--accent-2)">${esc(j.__file)}</small>` : ''}</td>
+      <td>${esc(fmtDate(j[FIELDS.date]))}</td><td>${badges(j).split('</span>')[0]}</span></td>
+      <td><span class="badge ${applyMethod(j).cls}">${applyMethod(j).txt}</span></td>
+      <td>${esc(j[FIELDS.notes] || '')}</td><td>${link ? `<a href="${esc(link)}" target="_blank" rel="noopener">↗</a>` : ''}</td></tr>`; }).join('')}
+  </tbody></table></div>`;
+}
+
+/* ---------- Loading files in the browser (no fetch needed) ---------- */
+async function loadFileList(fileList){
+  const arr = [...fileList].filter(f => /\.ya?ml$/i.test(f.name));
+  const loaded = await Promise.all(arr.map(async f => ({
+    path: f.webkitRelativePath ? f.webkitRelativePath.split('/').slice(1).join('/') : f.name,
+    text: await f.text()
+  })));
+  if (!loaded.length) return;
+  files = loaded.sort((a,b) => a.path.localeCompare(b.path));
+  select(files[0]);
+}
+$('#pickDir').onchange = e => loadFileList(e.target.files);
+$('#pickFiles').onchange = e => loadFileList(e.target.files);
+function wireDrop(el){
+  if (!el) return;
+  el.ondragover = e => { e.preventDefault(); el.classList.add('drag'); };
+  el.ondragleave = () => el.classList.remove('drag');
+  el.ondrop = async e => {
+    e.preventDefault(); el.classList.remove('drag');
+    const out = [];
+    async function walk(entry, prefix){
+      if (entry.isFile){ const f = await new Promise(r => entry.file(r)); if (/\.ya?ml$/i.test(f.name)) out.push({path: prefix + f.name, text: await f.text()}); }
+      else if (entry.isDirectory){
+        const rd = entry.createReader(); let batch;
+        do { batch = await new Promise(r => rd.readEntries(r)); for (const c of batch) await walk(c, prefix + entry.name + '/'); } while (batch.length);
+      }
+    }
+    for (const it of e.dataTransfer.items){ const en = it.webkitGetAsEntry?.(); if (en) await walk(en, ''); }
+    if (out.length){ files = out.sort((a,b)=>a.path.localeCompare(b.path)); select(files[0]); }
+  };
+}
+
+/* ---------- Init ---------- */
+files = EMBEDDED;
+let last = null; try { last = localStorage.getItem('lastYaml'); } catch {}
+current = (last === ALL.path && files.length > 1) ? ALL : (files.find(f => f.path === last) || files[0] || null);
+renderTree(); render();
+</script>
+</body>
+</html>
