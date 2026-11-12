@@ -2,15 +2,15 @@
 
 A configurable skill for extracting job application details from saved HTML listings, generating schema-compliant YAML, and reporting processing results including incomplete or duplicate listings, uncertainties, and any research or Playwright used.
 
-# How This will work
+# How This Works
 
-- By Appling you need to save every job listing html page using browser extension or "ctrl+s"
-- Configure this folder of html pages as your skill "INPUT_FOLDER"
-- Config Folder is provided in the repo: you can add or remove properties that you need or not need.
-- Changing this will change what will be extracted
-- Provide an hardcoed path for your "OUTPUT_FOLDER".
-- The reports of this skill will be creatd in "yaml" format
-- This reports can be indviaualley or together presented in the in this repo attached html file "Resume-Tracker-Dashboard.html".
+- When applying for a job, save each job listing page as an HTML file using a browser extension or `Ctrl + S`.
+- Configure the folder containing these HTML files as your skill's `INPUT_FOLDER`.
+- A configuration folder is provided in the repository. You can add or remove properties depending on your needs.
+- Changes to the configuration will determine which information gets extracted.
+- Specify an absolute, hardcoded path for your `OUTPUT_FOLDER`.
+- The skill generates reports in YAML format.
+- These reports can be viewed individually or combined in the `Resume-Tracker-Dashboard.html` file included in this repository.
 
 The repository includes a predefined dashboard that can load one or more exported YAML files from the output folder. Load the files to view their entries together in the dashboard.
 
