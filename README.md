@@ -16,7 +16,8 @@ The repository includes a predefined dashboard that can load one or more exporte
 
 The dashboard provides an overview of the loaded files and applications, including status and application-method breakdowns, entries per file, applications per day, and summaries by city and company. You can search, filter by status, sort, and switch between card and table views.
 
-<img width="2513" height="1257" alt="image" src="https://github.com/user-attachments/assets/0c0c7c45-204b-414c-840f-e7933792b7a2" />
+<img width="2544" height="1261" alt="image" src="https://github.com/user-attachments/assets/f5bd240f-82a8-4811-a9ec-19bdde8542b4" />
+
 
 
 ## Workflow diagrams
