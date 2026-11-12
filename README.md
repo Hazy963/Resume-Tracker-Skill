@@ -18,8 +18,6 @@ The dashboard provides an overview of the loaded files and applications, includi
 
 <img width="2544" height="1261" alt="image" src="https://github.com/user-attachments/assets/f5bd240f-82a8-4811-a9ec-19bdde8542b4" />
 
-
-
 ## Workflow diagrams
 
 ### End-to-end application workflow
@@ -90,6 +88,17 @@ OUTPUT_FOLDER/jobs.yaml
 ```
 
 It contains one record per unique listing and follows the configured schema. The YAML must be syntactically valid, and existing valid records should be preserved when updating the output.
+
+### Supported Job-Listing Platforms
+
+
+The extractor is designed to work with saved HTML job listings from different websites, using page content, metadata, and structured data rather than relying only on platform-specific selectors. Listings from unfamiliar websites are still processed.
+
+
+Indeed, Xing, and StepStone are classified as online application platforms by default (`OnlineFormApplying: true`). This default also applies to other platforms unless the listing explicitly provides an email address for job applications. When such an email is found, it is saved in `Email` and takes priority over the platform default (`OnlineFormApplying: false`).
+
+
+Platform recognition affects the application-method fields; it does not change the configured output schema. If details are missing or dynamically loaded, optional Playwright browsing or web research may be used to verify them. The processing report identifies incomplete or uncertain records and notes when research or Playwright was needed.
 
 ## Processing report
 
