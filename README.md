@@ -12,6 +12,16 @@ A configurable skill for extracting job application details from saved HTML list
 - The skill generates reports in YAML format.
 - These reports can be viewed individually or combined in the `Resume-Tracker-Dashboard.html` file included in this repository.
 
+# Add Skill in your Agent:
+Example of installing the skill in copilot:
+<img width="1847" height="551" alt="image" src="https://github.com/user-attachments/assets/02a66df4-776a-4a6e-ad44-2230ec8de277" />
+
+# using the skill inside of the agent:
+after defining your input, output folders and installing the skill in your agent you can simply call the skill and say just "run" nothing else will be needed.
+<img width="1947" height="876" alt="image" src="https://github.com/user-attachments/assets/b3acb860-bf20-4f80-a344-9f5a1f5de92c" />
+
+# Presenting Report and Tracking your Resume
+The Dashboard support summerized view for multiple created Reports too to track complete applying process 
 The repository includes a predefined dashboard that can load one or more exported YAML files from the output folder. Load the files to view their entries together in the dashboard.
 
 The dashboard provides an overview of the loaded files and applications, including status and application-method breakdowns, entries per file, applications per day, and summaries by city and company. You can search, filter by status, sort, and switch between card and table views.
