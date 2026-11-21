@@ -9,7 +9,7 @@ A configurable skill for extracting job application details from saved HTML list
 - A configuration folder is provided in the repository. You can add or remove properties depending on your needs.
 - Changes to the configuration will determine which information gets extracted.
 - Specify an absolute, hardcoded path for your `OUTPUT_FOLDER`.
-- The skill generates reports in YAML format.
+- The skill generates `reports` in YAML format inside your configured `OUTPUT_FOLDER`.
 - These reports can be viewed individually or combined in the `Resume-Tracker-Dashboard.html` file included in this repository.
 
 # Presenting Report and Tracking your Resume
